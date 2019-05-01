@@ -1,0 +1,7 @@
+apiVersion: serving.example.com/v1
+kind: TfInference
+metadata:
+  name: example-tfinference
+spec:
+  # Add fields here
+  size: 3
