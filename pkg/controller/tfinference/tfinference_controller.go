@@ -5,6 +5,7 @@ import (
 
 	servingv1 "github.com/yzyDavid/tf-inference-operator/pkg/apis/serving/v1"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -150,4 +151,48 @@ func newPodForCR(cr *servingv1.TfInference) *corev1.Pod {
 			},
 		},
 	}
+}
+
+func (r *ReconcileTfInference) newDeploymentForTfInference(cr *servingv1.TfInference) *appsv1.Deployment {
+	labels := map[string]string{
+		"app":             "tf_inference",
+		"tf_inference_cr": cr.Name,
+	}
+	replicas := cr.Spec.Size
+
+	deployment := &appsv1.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Deployment",
+			APIVersion: "apps/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cr.Name,
+			Namespace: cr.Namespace,
+		},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: &replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: labels,
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Image: "tensorflow/serving",
+						Name:  "tf-inference",
+					}},
+				},
+			},
+		},
+	}
+
+	err := controllerutil.SetControllerReference(cr, deployment, r.scheme)
+	if err != nil {
+		// TODO(Zhenyun Yu): should logging or return error.
+		return &appsv1.Deployment{}
+	}
+
+	return deployment
 }
