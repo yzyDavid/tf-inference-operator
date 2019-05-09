@@ -55,7 +55,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// TODO(user): Modify this to be the types you create that are owned by the primary resource
 	// Watch for changes to secondary resource Pods and requeue the owner TfInference
-	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
+	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
 		OwnerType:    &servingv1.TfInference{},
 	})
@@ -101,37 +101,40 @@ func (r *ReconcileTfInference) Reconcile(request reconcile.Request) (reconcile.R
 		return reconcile.Result{}, err
 	}
 
-	// Define a single Deployment object
-	deployment := r.newDeploymentForTfInference(instance)
-
-	// Check if this Pod already exists
-	found := &appsv1.Deployment{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: deployment.Name, Namespace: deployment.Namespace}, found)
-	if err != nil && errors.IsNotFound(err) {
-		reqLogger.Info("Creating a new Deployment", "Deployment.Namespace", deployment.Namespace, "Deployment.Name", deployment.Name)
-		err = r.client.Create(context.TODO(), deployment)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
-
-		// Pod created successfully - don't requeue
-		return reconcile.Result{}, nil
-	} else if err != nil {
-		return reconcile.Result{}, err
+	// Define Deployment objects given by algorithm
+	deploymentMetas := getDeploymentMetas(instance.Spec.Models, instance.Spec.Nodes)
+	var deployments []*appsv1.Deployment
+    for _, meta := range deploymentMetas {
+        deployments = append(deployments, r.newDeployment(instance, &meta))
 	}
 
-	// Pod already exists - don't requeue
-	reqLogger.Info("Skip reconcile: Deployment already exists", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
+	// Check all Deployment already exist
+	for _, deployment := range deployments {
+		found := &appsv1.Deployment{}
+		err = r.client.Get(context.TODO(), types.NamespacedName{Name: deployment.Name, Namespace: deployment.Namespace}, found)
+		if err != nil && errors.IsNotFound(err) {
+			reqLogger.Info("Creating a new Deployment", "Deployment.Namespace", deployment.Namespace, "Deployment.Name", deployment.Name)
+			err = r.client.Create(context.TODO(), deployment)
+			if err != nil {
+				return reconcile.Result{}, err
+			}
+		} else if err != nil {
+			return reconcile.Result{}, err
+		}
+	}
+
+	// Pod created successfully - don't requeue
 	return reconcile.Result{}, nil
 }
 
 // new One Deployment for TfInference
-func (r *ReconcileTfInference) newDeploymentForTfInference(cr *servingv1.TfInference) *appsv1.Deployment {
+func (r *ReconcileTfInference) newDeployment(cr *servingv1.TfInference, meta *DeploymentMeta) *appsv1.Deployment {
+	name := cr.Name + "-" + string(meta.Hash)
 	labels := map[string]string{
 		"app":             "tf_inference",
-		"tf_inference_cr": cr.Name,
+		"tf_inference_cr": name,
 	}
-	replicas := cr.Spec.Size
+	replicas := meta.Replicas
 
 	deployment := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -139,7 +142,7 @@ func (r *ReconcileTfInference) newDeploymentForTfInference(cr *servingv1.TfInfer
 			APIVersion: "apps/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name,
+			Name:      name,
 			Namespace: cr.Namespace,
 			Labels:    labels,
 		},
