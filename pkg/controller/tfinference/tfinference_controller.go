@@ -1,6 +1,8 @@
 package tfinference
 
 import (
+	"strconv"
+
 	"context"
 
 	servingv1 "github.com/yzyDavid/tf-inference-operator/pkg/apis/serving/v1"
@@ -78,8 +80,6 @@ type ReconcileTfInference struct {
 
 // Reconcile reads that state of the cluster for a TfInference object and makes changes based on the state read
 // and what is in the TfInference.Spec
-// TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates
-// a Pod as an example
 // Note:
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
@@ -108,7 +108,7 @@ func (r *ReconcileTfInference) Reconcile(request reconcile.Request) (reconcile.R
         deployments = append(deployments, r.newDeployment(instance, &meta))
 	}
 
-	// Check all Deployment already exist
+	// Check all Deployment already exist, if not, create it
 	for _, deployment := range deployments {
 		found := &appsv1.Deployment{}
 		err = r.client.Get(context.TODO(), types.NamespacedName{Name: deployment.Name, Namespace: deployment.Namespace}, found)
@@ -123,13 +123,15 @@ func (r *ReconcileTfInference) Reconcile(request reconcile.Request) (reconcile.R
 		}
 	}
 
+	// TODO: remove not yet used Deployments
+
 	// Pod created successfully - don't requeue
 	return reconcile.Result{}, nil
 }
 
 // new One Deployment for TfInference
 func (r *ReconcileTfInference) newDeployment(cr *servingv1.TfInference, meta *DeploymentMeta) *appsv1.Deployment {
-	name := cr.Name + "-" + string(meta.Hash)
+	name := cr.Name + "-" + strconv.FormatUint(uint64(meta.Hash), 16)
 	labels := map[string]string{
 		"app":             "tf_inference",
 		"tf_inference_cr": name,

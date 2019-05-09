@@ -3,5 +3,13 @@ kind: TfInference
 metadata:
   name: example-tfinference
 spec:
-  # Add fields here
-  size: 3
+  models:
+    - name: mnist
+      memory: 100
+      computing_resource: 50
+    - name: dummy
+      memory: 50
+      computing_resource: 10
+  nodes:
+    - memory: 1024
+      computing_resource: 200
