@@ -7,10 +7,16 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// Added by Zhenyun Yu, types here are necessary for specs
 type Model struct {
 	Name string `json:"name"`
     Memory int32 `json:"memory"`  // in MB
-    ComputingResource int32 `json:"computing_resource"`
+    ComputingResource int32 `json:"computing_resource"`  // 100 for each core
+}
+
+type Node struct {
+	Memory int32 `json:"memory"`
+	ComputingResource int32 `json:"computing_resource"`
 }
 
 // TfInferenceSpec defines the desired state of TfInference
@@ -20,6 +26,7 @@ type TfInferenceSpec struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
     Models []Model `json:"models"`
+    Nodes []Node `json:"nodes"`
 }
 
 // TfInferenceStatus defines the observed state of TfInference
