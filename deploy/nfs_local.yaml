@@ -3,6 +3,8 @@ kind: PersistentVolume
 
 metadata:
   name: local-nfs
+  labels:
+    content: models
 
 spec:
   capacity:
@@ -10,7 +12,7 @@ spec:
   volumeMode: Filesystem
   accessModes:
     - ReadWriteMany
-  persistentVolumeReclaimPolicy: Recycle
+  persistentVolumeReclaimPolicy: Retain
   storageClassName: slow
   mountOptions:
     - hard
