@@ -162,6 +162,14 @@ func (r *ReconcileTfInference) newDeployment(cr *servingv1.TfInference, meta *De
 						Image: "tensorflow/serving",
 						Name:  "tf-inference",
 					}},
+					Volumes: []corev1.Volume{{
+						Name: "models-volume",
+						VolumeSource: corev1.VolumeSource{
+							PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+								ClaimName: "local-nfs-pvc",
+							},
+						},
+					}},
 				},
 			},
 		},

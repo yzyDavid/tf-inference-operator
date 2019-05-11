@@ -12,8 +12,6 @@ spec:
   volumeMode: Filesystem
   accessModes:
     - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: slow
   mountOptions:
     - hard
     - nfsvers=4.1
