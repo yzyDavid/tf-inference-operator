@@ -23,14 +23,6 @@ func getHashByModels(models []string) uint32 {
 	return hasher.Sum32()
 }
 
-func removeModel(s []servingv1.Model, i int) []servingv1.Model {
-	return append(s[:i], s[i+1:]...)
-}
-
-func removeNode(s []servingv1.Node, i int) []servingv1.Node {
-	return append(s[:i], s[i+1:]...)
-}
-
 func deploymentInSlice(a DeploymentMeta, list []DeploymentMeta) bool {
 	for _, b := range list {
 		if b.Hash == a.Hash {
@@ -50,11 +42,11 @@ func getDeploymentMetas(models []servingv1.Model, nodes []servingv1.Node) []Depl
 	sort.SliceStable(nodes, func(i, j int) bool {
 		return nodes[i].Memory > nodes[j].Memory
 	})
-	nodesLeft := make([]servingv1.Node, 0)
-	modelsLeft := make([]servingv1.Model, 0)
+	nodesLeft := make([]servingv1.Node, len(nodes))
+	modelsLeft := make([]servingv1.Model, len(models))
 	copy(modelsLeft, models)
 	copy(nodesLeft, nodes)
-	for len(nodesLeft) > 0 {
+	for len(modelsLeft) > 0 && len(nodesLeft) > 0 {
 		var deployment DeploymentMeta
 		names := make([]string, 0)
 		for i := 0; i < len(modelsLeft); i++ {
@@ -69,7 +61,8 @@ func getDeploymentMetas(models []servingv1.Model, nodes []servingv1.Node) []Depl
 				continue
 			} else {
 				names = append(names, modelsLeft[i].Name)
-				removeModel(modelsLeft, i)
+				copy(modelsLeft[i:],modelsLeft[i+1:])
+				modelsLeft = modelsLeft[0:len(modelsLeft)-1]
 				i--
 			}
 		}
@@ -85,7 +78,7 @@ func getDeploymentMetas(models []servingv1.Model, nodes []servingv1.Node) []Depl
 			deployment.Replicas = 1
 			deployments = append(deployments, deployment)
 		}
-		removeNode(nodesLeft, 0)
+		nodesLeft = nodesLeft[1:]
 	}
 	return deployments
 }
