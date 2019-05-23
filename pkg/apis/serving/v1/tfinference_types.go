@@ -19,6 +19,12 @@ type Node struct {
 	ComputingResource int32 `json:"computing_resource"`
 }
 
+// If a model is grouped, its specs for computing resource will be overwritten by computing resource of group
+type Group struct {
+	GroupedModels []string `json:"grouped_models"`
+	ComputingResource int32 `json:"computing_resource"`
+}
+
 // TfInferenceSpec defines the desired state of TfInference
 // +k8s:openapi-gen=true
 type TfInferenceSpec struct {
@@ -26,6 +32,7 @@ type TfInferenceSpec struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
     Models []Model `json:"models"`
+    Groups []Group `json:"groups"`
     Nodes []Node `json:"nodes"`
 }
 

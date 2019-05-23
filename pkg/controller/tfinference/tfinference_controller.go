@@ -102,8 +102,8 @@ func (r *ReconcileTfInference) Reconcile(request reconcile.Request) (reconcile.R
 	}
 
 	// Define Deployment objects given by algorithm
-	deploymentMetas := getDeploymentMetas(instance.Spec.Models, instance.Spec.Nodes)
-	var deployments []*appsv1.Deployment
+	deploymentMetas := getDeploymentMetas(instance.Spec.Models, instance.Spec.Nodes,instance.Spec.Groups)
+	deployments := make([]*appsv1.Deployment,0)
     for _, meta := range deploymentMetas {
         deployments = append(deployments, r.newDeployment(instance, &meta))
 	}
