@@ -10,6 +10,7 @@ spec:
   capacity:
     storage: 5Gi
   volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Retain
   accessModes:
     - ReadWriteMany
   mountOptions:

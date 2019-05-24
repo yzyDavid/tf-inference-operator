@@ -106,6 +106,7 @@ func (r *ReconcileTfInference) Reconcile(request reconcile.Request) (reconcile.R
 	deployments := make([]*appsv1.Deployment,0)
     for _, meta := range deploymentMetas {
         deployments = append(deployments, r.newDeployment(instance, &meta))
+        reqLogger.Info("New Deployment with config:", "Hash", meta.Hash, "Models", meta.Models, "Replicas", meta.Replicas)
 	}
 
 	// Check all Deployment already exist, if not, create it
