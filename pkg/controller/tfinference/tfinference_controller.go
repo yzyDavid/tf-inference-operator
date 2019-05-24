@@ -162,6 +162,7 @@ func (r *ReconcileTfInference) newDeployment(cr *servingv1.TfInference, meta *De
 					Containers: []corev1.Container{{
 						Image: "tensorflow/serving",
 						Name:  "tf-inference",
+						Env: ["MODEL_NAME":"half_plus_two"],
 						VolumeMounts: []corev1.VolumeMount{{
 							Name: "models-volume",
 							MountPath: "/models",
