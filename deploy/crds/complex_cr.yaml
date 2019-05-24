@@ -1,0 +1,20 @@
+apiVersion: serving.example.com/v1
+kind: TfInference
+metadata:
+  name: example-tfinference
+spec:
+  models:
+    - name: mnist
+      memory: 100
+      computing_resource: 50
+    - name: dummy
+      memory: 50
+      computing_resource: 10
+    - name: big_cnn
+      memory: 500
+      computing_resource: 200
+  nodes:
+    - memory: 200
+      computing_resource: 100
+    - memory: 600
+      computing_resource: 300
