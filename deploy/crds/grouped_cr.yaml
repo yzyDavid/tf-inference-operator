@@ -1,7 +1,7 @@
 apiVersion: serving.example.com/v1
 kind: TfInference
 metadata:
-  name: example-tfinference
+  name: grouped-tfinference
 spec:
   models:
     - name: mnist
