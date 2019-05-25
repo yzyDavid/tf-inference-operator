@@ -166,13 +166,9 @@ func (r *ReconcileTfInference) newDeployment(cr *servingv1.TfInference, meta *De
 							Name: "MODEL_NAME",
 							Value: "half_plus_two",
 						}},
-						Ports:[]corev1.ContainerPort{{
-							ContainerPort:8501,
-							HostPort:8501,
-						}},
 						VolumeMounts: []corev1.VolumeMount{{
 							Name: "models-volume",
-							MountPath: "/models/half_plus_two",
+							MountPath: "/models",
 						}},
 					}},
 					Volumes: []corev1.Volume{{
